@@ -1,0 +1,20 @@
+Dataset Export Summary
+========================
+Total samples exported: 485
+Character classes: 12
+Image dimensions: 32x32x1
+Skipped files: 0
+
+Class distribution:
+  '0': 28 samples
+  '1': 42 samples
+  '2': 33 samples
+  '3': 22 samples
+  '4': 32 samples
+  '5': 27 samples
+  '6': 42 samples
+  '7': 55 samples
+  '8': 31 samples
+  '9': 23 samples
+  '+': 73 samples
+  '-': 77 samples

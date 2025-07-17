@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Math Quiz Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            min-width: 500px;
+        }
+
+        .title {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .math-problem {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 3px solid #4ecdc4;
+            position: relative;
+        }
+
+        .problem-text {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+        }
+
+        .answer-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .answer-input {
+            font-size: 2em;
+            padding: 15px 20px;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            width: 120px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .feedback.correct {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+
+        .feedback.incorrect {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .coordinates {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .coordinate-display {
+            margin: 5px 0;
+        }
+
+        .help-text {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .problem-text.new-problem {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="coordinates">
+        <div class="coordinate-display">Mouse: <span id="mouseCoords">X: 0, Y: 0</span></div>
+        <div class="coordinate-display">Problem: <span id="problemCoords">X: ?, Y: ?</span></div>
+        <div class="coordinate-display">Input: <span id="inputCoords">X: ?, Y: ?</span></div>
+        <div class="coordinate-display">Button: <span id="buttonCoords">X: ?, Y: ?</span></div>
+    </div>
+
+    <div class="quiz-container">
+        <h1 class="title">🧮 Math Quiz Simulator</h1>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="correct">0</div>
+                <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="incorrect">0</div>
+                <div class="stat-label">Incorrect</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Streak</div>
+            </div>
+        </div>
+
+        <div class="math-problem" id="mathProblem">
+            <div class="problem-text" id="problemText">5 + 3</div>
+            <div class="answer-section">
+                <input type="number" id="answerInput" class="answer-input" placeholder="?" min="-18" max="18">
+                <button id="submitBtn" class="submit-btn">Submit</button>
+            </div>
+            <div id="feedback" class="feedback" style="display: none;"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="generateNewProblem()">New Problem</button>
+            <button class="control-btn" onclick="toggleAutoMode()">
+                <span id="autoModeText">Auto Mode: OFF</span>
+            </button>
+            <button class="control-btn" onclick="resetStats()">Reset Stats</button>
+            <button class="control-btn" onclick="copyCoordinates()">Copy Coordinates</button>
+        </div>
+
+        <div class="help-text">
+            <strong>📍 Bot Setup Guide:</strong><br>
+            1. Move mouse over the math problem to get coordinates<br>
+            2. Click "Copy Coordinates" to get bot settings<br>
+            3. Update your bot script with the coordinates<br>
+            4. Use "Auto Mode" to test your bot<br>
+            <strong>Problem Range:</strong> Numbers from -9 to 9, operations: + and -
+        </div>
+    </div>
+
+    <script>
+        let currentProblem = { num1: 5, num2: 3, operator: '+', answer: 8 };
+        let stats = { correct: 0, incorrect: 0, streak: 0 };
+        let autoMode = false;
+        let autoInterval;
+
+        // Generate random number between -9 and 9
+        function randomNumber() {
+            return Math.floor(Math.random() * 19) - 9; // -9 to 9
+        }
+
+        // Generate random operator (+ or -)
+        function randomOperator() {
+            return Math.random() < 0.5 ? '+' : '-';
+        }
+
+        // Generate new math problem
+        function generateNewProblem() {
+            const num1 = randomNumber();
+            const num2 = randomNumber();
+            const operator = randomOperator();
+            const answer = operator === '+' ? num1 + num2 : num1 - num2;
+
+            currentProblem = { num1, num2, operator, answer };
+            
+            const problemText = document.getElementById('problemText');
+            problemText.textContent = `${num1} ${operator} ${num2}`;
+            problemText.classList.add('new-problem');
+            
+            setTimeout(() => {
+                problemText.classList.remove('new-problem');
+            }, 500);
+
+            // Clear input and feedback
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').style.display = 'none';
+            
+            // Focus on input
+            document.getElementById('answerInput').focus();
+        }
+
+        // Check answer
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answerInput').value);
+            const feedback = document.getElementById('feedback');
+            
+            if (isNaN(userAnswer)) {
+                feedback.textContent = '⚠️ Please enter a number!';
+                feedback.className = 'feedback incorrect';
+                feedback.style.display = 'block';
+                return;
+            }
+
+            if (userAnswer === currentProblem.answer) {
+                feedback.textContent = `✅ Correct! ${currentProblem.num1} ${currentProblem.operator} ${currentProblem.num2} = ${currentProblem.answer}`;
+                feedback.className = 'feedback correct';
+                stats.correct++;
+                stats.streak++;
+            } else {
+                feedback.textContent = `❌ Wrong! ${currentProblem.num1} ${currentProblem.operator} ${currentProblem.num2} = ${currentProblem.answer}`;
+                feedback.className = 'feedback incorrect';
+                stats.incorrect++;
+                stats.streak = 0;
+            }
+
+            feedback.style.display = 'block';
+            updateStats();
+
+            // Auto-generate new problem after 2 seconds
+            setTimeout(() => {
+                generateNewProblem();
+            }, 2000);
+        }
+
+        // Update statistics display
+        function updateStats() {
+            document.getElementById('correct').textContent = stats.correct;
+            document.getElementById('incorrect').textContent = stats.incorrect;
+            document.getElementById('streak').textContent = stats.streak;
+        }
+
+        // Reset statistics
+        function resetStats() {
+            stats = { correct: 0, incorrect: 0, streak: 0 };
+            updateStats();
+        }
+
+        // Toggle auto mode
+        function toggleAutoMode() {
+            autoMode = !autoMode;
+            const autoModeText = document.getElementById('autoModeText');
+            
+            if (autoMode) {
+                autoModeText.textContent = 'Auto Mode: ON';
+                autoInterval = setInterval(() => {
+                    generateNewProblem();
+                }, 3000);
+            } else {
+                autoModeText.textContent = 'Auto Mode: OFF';
+                clearInterval(autoInterval);
+            }
+        }
+
+        // Copy coordinates for bot configuration
+        function copyCoordinates() {
+            const problemRect = document.getElementById('problemText').getBoundingClientRect();
+            const inputRect = document.getElementById('answerInput').getBoundingClientRect();
+            const buttonRect = document.getElementById('submitBtn').getBoundingClientRect();
+
+            const coordinates = `
+# Bot Coordinates for Math Quiz Simulator
+SCAN_REGION = {
+    'x': ${Math.round(problemRect.left)},
+    'y': ${Math.round(problemRect.top)},
+    'width': ${Math.round(problemRect.width)},
+    'height': ${Math.round(problemRect.height)}
+}
+
+# Input field coordinates (for clicking before typing)
+INPUT_COORDS = (${Math.round(inputRect.left + inputRect.width/2)}, ${Math.round(inputRect.top + inputRect.height/2)})
+
+# Submit button coordinates  
+SUBMIT_COORDS = (${Math.round(buttonRect.left + buttonRect.width/2)}, ${Math.round(buttonRect.top + buttonRect.height/2)})
+            `.trim();
+
+            navigator.clipboard.writeText(coordinates).then(() => {
+                alert('📋 Coordinates copied to clipboard!\n\nPaste these into your bot script.');
+            }).catch(() => {
+                // Fallback for browsers that don't support clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = coordinates;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('📋 Coordinates copied to clipboard!');
+            });
+        }
+
+        // Track mouse coordinates
+        document.addEventListener('mousemove', (e) => {
+            document.getElementById('mouseCoords').textContent = `X: ${e.clientX+113}, Y: ${e.clientY+110}`;
+            
+            // Update element coordinates when hovering
+            const problemRect = document.getElementById('problemText').getBoundingClientRect();
+            const inputRect = document.getElementById('answerInput').getBoundingClientRect();
+            const buttonRect = document.getElementById('submitBtn').getBoundingClientRect();
+            
+            document.getElementById('problemCoords').textContent = 
+                `X: ${Math.round(problemRect.left)-43}, Y: ${Math.round(problemRect.top)+110}, W: ${Math.round(problemRect.width)}, H: ${Math.round(problemRect.height)}`;
+            document.getElementById('inputCoords').textContent = 
+                `X: ${Math.round(inputRect.left + inputRect.width/2)-43}, Y: ${Math.round(inputRect.top + inputRect.height/2)+110}`;
+            document.getElementById('buttonCoords').textContent = 
+                `X: ${Math.round(buttonRect.left + buttonRect.width/2)-43}, Y: ${Math.round(buttonRect.top + buttonRect.height/2)+110}`;
+        });
+
+        // Event listeners
+        document.getElementById('submitBtn').addEventListener('click', checkAnswer);
+        document.getElementById('answerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Initialize
+        generateNewProblem();
+        updateStats();
+    </script>
+</body>
+</html>
